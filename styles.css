@@ -201,6 +201,65 @@ input[type="file"] {
   cursor: pointer;
 }
 
+input[type="color"] {
+  width: 64px;
+  height: 44px;
+  border: 1px solid #bcd2c7;
+  border-radius: 12px;
+  background: var(--surface-0);
+  padding: 4px;
+  cursor: pointer;
+}
+
+.color-tool-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chip-btn {
+  border: 1px solid #b7d2c5;
+  background: var(--surface-0);
+  color: var(--forest-800);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.85rem;
+  font-family: "Noto Sans", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip-btn:hover {
+  border-color: var(--forest-700);
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: var(--space-3);
+}
+
+.preset-btn {
+  border: 1px solid #b7d2c5;
+  background: var(--surface-0);
+  color: var(--text-900);
+  border-radius: 10px;
+  padding: 0.55rem 0.72rem;
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.preset-btn:hover,
+.preset-btn.active {
+  border-color: var(--forest-700);
+  transform: translateY(-1px);
+}
+
 input:focus-visible,
 button:focus-visible {
   outline: 3px solid rgba(21, 87, 65, 0.3);
@@ -324,5 +383,9 @@ button:disabled {
 
   .preview-stage {
     min-height: 300px;
+  }
+
+  .preset-grid {
+    grid-template-columns: 1fr;
   }
 }

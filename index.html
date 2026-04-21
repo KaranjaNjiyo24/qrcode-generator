@@ -86,6 +86,23 @@
               <p class="hint">Best results: square logo with transparent background</p>
             </div>
 
+            <div class="field-group">
+              <label for="qr-color-input">QR Color Design</label>
+              <div class="color-tool-row">
+                <input id="qr-color-input" name="qrColor" type="color" value="#000000" />
+                <button id="default-color-btn" class="chip-btn" type="button">Default Black</button>
+                <button id="logo-color-btn" class="chip-btn" type="button">Use Logo Color</button>
+              </div>
+              <div class="preset-grid" aria-label="Event and company color presets">
+                <button class="preset-btn" type="button" data-color="#1f3a8a">Corporate Navy</button>
+                <button class="preset-btn" type="button" data-color="#7c2d12">Conference Rust</button>
+                <button class="preset-btn" type="button" data-color="#14532d">Eco Green</button>
+                <button class="preset-btn" type="button" data-color="#5b1d8f">Innovation Violet</button>
+                <button class="preset-btn" type="button" data-color="#0f766e">Summit Teal</button>
+              </div>
+              <p id="active-color-text" class="hint">Active QR color: #000000</p>
+            </div>
+
             <p id="status-message" class="status" role="status" aria-live="polite"></p>
 
             <div class="action-row">

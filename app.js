@@ -8,6 +8,11 @@ const canvas = document.getElementById("qr-canvas");
 const placeholderText = document.getElementById("placeholder-text");
 const howItWorksBtn = document.getElementById("how-it-works-btn");
 const howItWorksPanel = document.getElementById("how-it-works-panel");
+const qrColorInput = document.getElementById("qr-color-input");
+const defaultColorBtn = document.getElementById("default-color-btn");
+const logoColorBtn = document.getElementById("logo-color-btn");
+const activeColorText = document.getElementById("active-color-text");
+const presetButtons = document.querySelectorAll(".preset-btn");
 
 const QR_SIZE = 900;
 const LOGO_MAX_RATIO = 0.2;
@@ -15,6 +20,46 @@ const LOGO_MAX_RATIO = 0.2;
 let logoDataUrl = null;
 let hasGeneratedQr = false;
 let latestPayload = "";
+let currentQrColor = "#000000";
+
+function clearPresetSelection() {
+  presetButtons.forEach((button) => button.classList.remove("active"));
+}
+
+function updateActiveColorLabel() {
+  if (activeColorText) {
+    activeColorText.textContent = `Active QR color: ${currentQrColor.toUpperCase()}`;
+  }
+}
+
+async function rerenderIfGenerated(statusText) {
+  if (!hasGeneratedQr || !latestPayload) {
+    return;
+  }
+
+  await generateQr(latestPayload);
+  if (statusText) {
+    setStatus(statusText, "success");
+  }
+}
+
+function setQrColor(nextColor, options = {}) {
+  const normalized = String(nextColor || "").trim().toLowerCase();
+  if (!/^#[0-9a-f]{6}$/.test(normalized)) {
+    throw new Error("Selected color is invalid. Please choose another color.");
+  }
+
+  currentQrColor = normalized;
+  if (qrColorInput) {
+    qrColorInput.value = normalized;
+  }
+
+  if (!options.keepPreset) {
+    clearPresetSelection();
+  }
+
+  updateActiveColorLabel();
+}
 
 if (howItWorksBtn && howItWorksPanel) {
   howItWorksBtn.addEventListener("click", () => {
@@ -29,6 +74,75 @@ if (howItWorksBtn && howItWorksPanel) {
     howItWorksPanel.setAttribute("hidden", "");
     howItWorksBtn.setAttribute("aria-expanded", "false");
     howItWorksBtn.textContent = "How it works";
+  });
+}
+
+function findDominantColor(dataUrl) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const image = await getImageFromDataUrl(dataUrl);
+      const swatchCanvas = document.createElement("canvas");
+      const swatchSize = 120;
+      swatchCanvas.width = swatchSize;
+      swatchCanvas.height = swatchSize;
+
+      const ctx = swatchCanvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) {
+        reject(new Error("Could not read logo colors."));
+        return;
+      }
+
+      ctx.drawImage(image, 0, 0, swatchSize, swatchSize);
+      const { data } = ctx.getImageData(0, 0, swatchSize, swatchSize);
+      const buckets = new Map();
+
+      for (let i = 0; i < data.length; i += 4 * 2) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const a = data[i + 3];
+
+        if (a < 120) {
+          continue;
+        }
+
+        // Skip near-white and near-black to better capture brand tones.
+        if (r > 240 && g > 240 && b > 240) {
+          continue;
+        }
+        if (r < 20 && g < 20 && b < 20) {
+          continue;
+        }
+
+        const qr = Math.round(r / 32) * 32;
+        const qg = Math.round(g / 32) * 32;
+        const qb = Math.round(b / 32) * 32;
+        const key = `${Math.min(255, qr)},${Math.min(255, qg)},${Math.min(255, qb)}`;
+        buckets.set(key, (buckets.get(key) || 0) + 1);
+      }
+
+      if (buckets.size === 0) {
+        reject(new Error("Could not detect a dominant color from the logo."));
+        return;
+      }
+
+      let bestKey = "0,0,0";
+      let bestCount = 0;
+      buckets.forEach((count, key) => {
+        if (count > bestCount) {
+          bestCount = count;
+          bestKey = key;
+        }
+      });
+
+      const [red, green, blue] = bestKey.split(",").map((value) => Number(value));
+      const hex = `#${[red, green, blue]
+        .map((value) => value.toString(16).padStart(2, "0"))
+        .join("")}`;
+      resolve(hex);
+    } catch {
+      reject(new Error("Could not detect a dominant color from the logo."));
+    }
   });
 }
 
@@ -97,7 +211,7 @@ async function generateQr(payload) {
     margin: 2,
     errorCorrectionLevel: "H",
     color: {
-      dark: "#0f3d2e",
+      dark: currentQrColor,
       light: "#ffffff",
     },
   });
@@ -110,6 +224,63 @@ async function generateQr(payload) {
   canvas.style.display = "block";
   placeholderText.style.display = "none";
 }
+
+if (qrColorInput) {
+  qrColorInput.addEventListener("input", async () => {
+    try {
+      setQrColor(qrColorInput.value);
+      await rerenderIfGenerated("QR color updated.");
+    } catch (error) {
+      setStatus(error.message || "Could not apply that color.", "error");
+    }
+  });
+}
+
+if (defaultColorBtn) {
+  defaultColorBtn.addEventListener("click", async () => {
+    try {
+      setQrColor("#000000");
+      await rerenderIfGenerated("QR color reset to default black.");
+    } catch (error) {
+      setStatus(error.message || "Could not set default color.", "error");
+    }
+  });
+}
+
+if (logoColorBtn) {
+  logoColorBtn.addEventListener("click", async () => {
+    if (!logoDataUrl) {
+      setStatus("Upload a logo first to extract company color.", "error");
+      return;
+    }
+
+    try {
+      const dominantColor = await findDominantColor(logoDataUrl);
+      setQrColor(dominantColor);
+      await rerenderIfGenerated("Applied dominant logo color to QR.");
+    } catch (error) {
+      setStatus(error.message || "Could not extract a color from logo.", "error");
+    }
+  });
+}
+
+presetButtons.forEach((button) => {
+  button.addEventListener("click", async () => {
+    const presetColor = button.dataset.color;
+    if (!presetColor) {
+      return;
+    }
+
+    try {
+      clearPresetSelection();
+      button.classList.add("active");
+      setQrColor(presetColor, { keepPreset: true });
+      await rerenderIfGenerated("Preset color applied.");
+    } catch (error) {
+      setStatus(error.message || "Could not apply preset color.", "error");
+    }
+  });
+});
 
 function readLogoFile(file) {
   return new Promise((resolve, reject) => {
@@ -194,6 +365,8 @@ logoInput.addEventListener("change", async () => {
     setStatus(error.message || "Failed to load logo image.", "error");
   }
 });
+
+updateActiveColorLabel();
 
 downloadBtn.addEventListener("click", () => {
   if (!hasGeneratedQr) {

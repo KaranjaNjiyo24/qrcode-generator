@@ -1,6 +1,6 @@
 # Forest QR Studio
 
-A simple client-side QR code generator that lets users:
+This is a simple client-side QR code generator that lets users:
 
 - Paste a URL and generate a QR code
 - Optionally upload an organization logo for center overlay
