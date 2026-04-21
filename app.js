@@ -6,6 +6,8 @@ const generateBtn = document.getElementById("generate-btn");
 const downloadBtn = document.getElementById("download-btn");
 const canvas = document.getElementById("qr-canvas");
 const placeholderText = document.getElementById("placeholder-text");
+const howItWorksBtn = document.getElementById("how-it-works-btn");
+const howItWorksPanel = document.getElementById("how-it-works-panel");
 
 const QR_SIZE = 900;
 const LOGO_MAX_RATIO = 0.2;
@@ -13,6 +15,22 @@ const LOGO_MAX_RATIO = 0.2;
 let logoDataUrl = null;
 let hasGeneratedQr = false;
 let latestPayload = "";
+
+if (howItWorksBtn && howItWorksPanel) {
+  howItWorksBtn.addEventListener("click", () => {
+    const isCurrentlyHidden = howItWorksPanel.hasAttribute("hidden");
+    if (isCurrentlyHidden) {
+      howItWorksPanel.removeAttribute("hidden");
+      howItWorksBtn.setAttribute("aria-expanded", "true");
+      howItWorksBtn.textContent = "Hide how it works";
+      return;
+    }
+
+    howItWorksPanel.setAttribute("hidden", "");
+    howItWorksBtn.setAttribute("aria-expanded", "false");
+    howItWorksBtn.textContent = "How it works";
+  });
+}
 
 function setStatus(message, type = "") {
   statusMessage.textContent = message;
