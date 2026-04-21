@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forest QR Generator</title>
+    <meta
+      name="description"
+      content="Generate a QR code from a link, optionally add your logo, and download as PNG."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Serif:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <p class="brand">Forest QR Studio</p>
+        <button
+          id="how-it-works-btn"
+          class="ghost-btn"
+          type="button"
+          aria-label="View how it works"
+          aria-expanded="false"
+          aria-controls="how-it-works-panel"
+        >
+          How it works
+        </button>
+      </div>
+    </header>
+
+    <main class="container page-shell">
+      <section class="hero-card card">
+        <div class="tag-row" aria-hidden="true">
+          <span class="tag">Link to QR</span>
+          <span class="tag">Brand Logo</span>
+          <span class="tag">PNG Export</span>
+        </div>
+        <h1>Generate branded QR codes in seconds</h1>
+        <p>
+          Paste your URL, optionally add your organization logo, and download a ready-to-share QR
+          code image.
+        </p>
+      </section>
+
+      <section id="how-it-works-panel" class="card how-card" hidden>
+        <h2>How It Works</h2>
+        <ol>
+          <li>Paste a full URL (starting with http:// or https://) into the link field.</li>
+          <li>Optionally upload your organization logo to place it at the center of the QR.</li>
+          <li>Click Generate QR to render a high-quality preview in the preview card.</li>
+          <li>Click Download PNG to save the generated QR code image.</li>
+        </ol>
+      </section>
+
+      <section class="workspace-grid" aria-label="QR generator workspace">
+        <article class="card control-card">
+          <h2>QR Settings</h2>
+
+          <form id="qr-form" novalidate>
+            <div class="field-group">
+              <label for="url-input">Link URL</label>
+              <input
+                id="url-input"
+                name="url"
+                type="url"
+                placeholder="https://example.com"
+                autocomplete="off"
+                required
+              />
+              <p class="hint">Use a full URL including http:// or https://</p>
+            </div>
+
+            <div class="field-group">
+              <label for="logo-input">Organization Logo (optional)</label>
+              <input
+                id="logo-input"
+                name="logo"
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              />
+              <p class="hint">Best results: square logo with transparent background</p>
+            </div>
+
+            <p id="status-message" class="status" role="status" aria-live="polite"></p>
+
+            <div class="action-row">
+              <button id="generate-btn" class="primary-btn" type="submit">Generate QR</button>
+              <button id="download-btn" class="secondary-btn" type="button" disabled>
+                Download PNG
+              </button>
+            </div>
+          </form>
+        </article>
+
+        <article class="card preview-card">
+          <h2>Preview</h2>
+          <div class="preview-stage" id="preview-stage">
+            <canvas
+              id="qr-canvas"
+              width="900"
+              height="900"
+              aria-label="Generated QR code preview"
+            ></canvas>
+            <p id="placeholder-text">Your generated QR code will appear here.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
